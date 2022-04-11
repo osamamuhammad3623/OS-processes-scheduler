@@ -4,12 +4,19 @@
 #include "QDebug"
 #include "QMessageBox"
 
+/***************************************
+    Tables Definitions
+***************************************/
+#define TABLE_WIDTH     (780)
+#define CHART_HEIGHT    (80)
+
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
+    this->setWindowTitle("OS Processes Scheduler");
 }
 
 MainWindow::~MainWindow()
@@ -17,70 +24,100 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+
+/***************************************
+    Global variables
+***************************************/
+int n=0; /* number of processes */
+int col; /* number of columns needed for the selected algorithm */
+QString selectedAlgorithm;
+
+
+/***************************************
+    Functions implementation
+***************************************/
+
 /*
-Supported algorithms: - Round Robin
-                        FCFS
-                        Preemptive Priority
-                        Non-Preemptive Priority
-                        Preemptive SJF
-                        Non-Preemptive SJF
+Description: A function to set the table according to the selected algorithm
 */
+void configureTable(Ui::MainWindow* ui, int n_columns, QStringList* header){
+    ui->table->setColumnCount(n_columns);
+    for (int i=0; i< n_columns; i++){
+        ui->table->setColumnWidth(i,TABLE_WIDTH/n_columns);
+    }
+    ui->table->setHorizontalHeaderLabels(*header);
+}
+
+
+/*
+Description: A function to return the user-input data about processes in a 2D vector
+*/
+QVector<QVector<int>> getProcessInfo(Ui::MainWindow* ui){
+    QVector<QVector<int>> data (n, QVector<int> (col)); /* 2D vector to store processes data */
+    for (int i=0; i< n; i++){
+        for (int j=0; j< col; j++){
+            data[i][j] = ui->table->item(i,j)->text().toUInt();
+        }
+    }
+
+    return data;
+}
+
 
 void MainWindow::on_proceedBtn_clicked()
 {
-    int n = ui->n->value() ;
+    n = ui->n->value() ;
     if (n == 0){
         QMessageBox::information(this, "Processes number", "Enter a valid number of processes!");
 
     }else{
         QStringList header;
-        qint16 tableWidth=780;
         ui->table->setRowCount(n);
-        int algo_columns;
-        if (ui->algorithm->currentText() == "Round Robin"){
+        selectedAlgorithm = ui->algorithm->currentText();
+        if (selectedAlgorithm == "Round Robin"){
+            header << "Arrival Time" << "Burst Time";
+            col =2;
 
-            /* adjust table */
-            algo_columns = 2;
-            ui->table->setColumnCount(algo_columns);
-            for (int i=0; i< algo_columns; i++){
-                ui->table->setColumnWidth(i,tableWidth/algo_columns);
-            }
-            header << "process ID" << "Arrival Time";
-            ui->table->setHorizontalHeaderLabels(header);
-
-
-        }else if (ui->algorithm->currentText() == "FCFS"){
-            algo_columns = 3;
-            ui->table->setColumnCount(algo_columns);
-            for (int i=0; i< algo_columns; i++){
-                ui->table->setColumnWidth(i,tableWidth/algo_columns);
-            }
+        }else if (selectedAlgorithm== "FCFS"){
             header << "process ID" << "Arrival Time" << "Burst Time";
-            ui->table->setHorizontalHeaderLabels(header);
+            col =3;
+        }
+        else if (selectedAlgorithm== "Preemptive Priority"){
+            header << "process ID" << "Arrival Time" << "Priority";
+            col =3;
+        }
+        else if (selectedAlgorithm == "Non-Preemptive Priority"){
+            header << "process ID" << "Arrival Time" << "Priority";
+            col =3;
+        }
+        else if (selectedAlgorithm == "Preemptive SJF"){
+            header << "process ID" << "Arrival Time" << "Priority";
+            col =3;
+        }
+        else if (selectedAlgorithm == "Non-Preemptive SJF"){
+            header << "process ID" << "Arrival Time" << "Priority";
+            col =3;
         }
 
-        else if (ui->algorithm->currentText() == "Preemptive Priority"){
-            algo_columns = 3;
-            ui->table->setColumnCount(algo_columns);
-            for (int i=0; i< algo_columns; i++){
-                ui->table->setColumnWidth(i,tableWidth/algo_columns);
-            }
-            header << "process ID" << "Arrival Time" << "Priority";
-            ui->table->setHorizontalHeaderLabels(header);
-        }
+        configureTable(ui, col, &header);
     }
 }
 
 
 void MainWindow::on_simulateBtn_clicked()
 {
-    QVector<QVector<int>> output {{1,5},{2,10},{1,7},{3,3},{3,4}};
+    QVector<QVector<int>> processInfo = getProcessInfo(ui);
+    /*
+
+    Call function that implements the algorithm according to selectedAlgorithm
+
+    */
+    QVector<QVector<int>> output;
     qint8 si = output.size();
     ui->chart->setColumnCount(si);
-    ui->chart->setRowCount(2);
-    int chartHeight=80;
-    ui->chart->setRowHeight(0,chartHeight/2);
-    ui->chart->setRowHeight(1,chartHeight/2);
+    ui->chart->setRowCount(2); /* row-0 for which process in CPU, row-1 shows time taken in CPU */
+    ui->chart->setRowHeight(0,CHART_HEIGHT/2);
+    ui->chart->setRowHeight(1,CHART_HEIGHT/2);
 
     auto model = ui->chart->model();
     for (int i=0; i< si; i++){
