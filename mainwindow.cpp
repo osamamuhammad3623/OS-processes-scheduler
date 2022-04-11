@@ -4,13 +4,6 @@
 #include "QDebug"
 #include "QMessageBox"
 
-/***************************************
-    Tables Definitions
-***************************************/
-#define TABLE_WIDTH     (780)
-#define CHART_HEIGHT    (80)
-
-
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)

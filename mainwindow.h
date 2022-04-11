@@ -3,6 +3,21 @@
 
 #include <QMainWindow>
 
+/***************************************
+    Tables Definitions
+***************************************/
+#define TABLE_WIDTH     (780)
+#define CHART_HEIGHT    (80)
+
+
+/***************************************
+    Global variables declaration
+***************************************/
+extern int n; /* number of processes */
+extern int col; /* number of columns needed for the selected algorithm */
+extern QString selectedAlgorithm;
+
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -16,12 +31,6 @@ public:
     ~MainWindow();
 
 private slots:
-    void on_btn_clicked();
-
-    void on_go_clicked();
-
-    void on_sim_clicked();
-
     void on_proceedBtn_clicked();
 
     void on_simulateBtn_clicked();
