@@ -107,11 +107,24 @@ void MainWindow::on_simulateBtn_clicked()
     */
     QVector<QVector<int>> output;
     qint8 si = output.size();
+
+    /* Adjust chart columns */
+    uint32_t totalTime =0;
+    for (int i=0; i< si;i++){
+        totalTime+= output[i][1];
+    }
     ui->chart->setColumnCount(si);
+    for (int i=0; i< si;i++){
+        /* set column width according to time spent in CPU [longer timer -> wider cloumn] */
+        ui->chart->setColumnWidth(i,(TABLE_WIDTH/totalTime)*output[i][1]);
+    }
+
+    /* Adjust chart rows */
     ui->chart->setRowCount(2); /* row-0 for which process in CPU, row-1 shows time taken in CPU */
     ui->chart->setRowHeight(0,CHART_HEIGHT/2);
     ui->chart->setRowHeight(1,CHART_HEIGHT/2);
 
+    /* display algorithm output */
     auto model = ui->chart->model();
     for (int i=0; i< si; i++){
         model->setData(model->index(0,i),"P" + QString::number(output[i][0]));
