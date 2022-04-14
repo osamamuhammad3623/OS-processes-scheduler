@@ -79,6 +79,12 @@
       <height>80</height>
      </rect>
     </property>
+    <property name="verticalScrollBarPolicy">
+     <enum>Qt::ScrollBarAlwaysOff</enum>
+    </property>
+    <property name="horizontalScrollBarPolicy">
+     <enum>Qt::ScrollBarAlwaysOff</enum>
+    </property>
     <attribute name="horizontalHeaderVisible">
      <bool>false</bool>
     </attribute>

@@ -99,13 +99,13 @@ void MainWindow::on_proceedBtn_clicked()
 
 void MainWindow::on_simulateBtn_clicked()
 {
-    QVector<QVector<int>> processInfo = getProcessInfo(ui);
+    //QVector<QVector<int>> processInfo = getProcessInfo(ui);
     /*
 
     Call function that implements the algorithm according to selectedAlgorithm
 
     */
-    QVector<QVector<int>> output;
+    QVector<QVector<int>> output = {{1,5},{2,3},{1,4},{3,10},{4,8}}; /* dummy data for testing */
     qint8 si = output.size();
 
     /* Adjust chart columns */
@@ -118,7 +118,6 @@ void MainWindow::on_simulateBtn_clicked()
         /* set column width according to time spent in CPU [longer timer -> wider cloumn] */
         ui->chart->setColumnWidth(i,(TABLE_WIDTH/totalTime)*output[i][1]);
     }
-
     /* Adjust chart rows */
     ui->chart->setRowCount(2); /* row-0 for which process in CPU, row-1 shows time taken in CPU */
     ui->chart->setRowHeight(0,CHART_HEIGHT/2);
