@@ -6,15 +6,18 @@
 /***************************************
     Tables Definitions
 ***************************************/
-#define TABLE_WIDTH     (780)
-#define CHART_HEIGHT    (80)
-
+#define TABLE_WIDTH         (870)
+#define CHART_HEIGHT        (80)
+#define ARRIAVAL_TIME_INDEX (0)
+#define BURST_TIME_INDEX    (1)
+#define PRIORITY_INDEX      (2)
 
 /***************************************
     Global variables declaration
 ***************************************/
 extern int n; /* number of processes */
 extern int col; /* number of columns needed for the selected algorithm */
+extern int qunatum; /* needed for Round Robin algorithm */
 extern QString selectedAlgorithm;
 
 

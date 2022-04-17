@@ -10,10 +10,21 @@ CONFIG += c++11
 
 SOURCES += \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    scheduling/FCFS.cpp \
+    scheduling/PRI_NP.cpp \
+    scheduling/PRI_P.cpp \
+    scheduling/RoundRobin.cpp \
+    scheduling/SCHEDULING.cpp \
+    scheduling/SJF_NP.cpp \
+    scheduling/SJF_P.cpp \
+    scheduling/process.cpp \
+    scheduling/scheduler.cpp
 
 HEADERS += \
-    mainwindow.h
+    mainwindow.h \
+    scheduling/process.h \
+    scheduling/scheduler.h
 
 FORMS += \
     mainwindow.ui
