@@ -4,6 +4,7 @@
 #include "QDebug"
 #include <vector>
 #include "QMessageBox"
+#include <QtWidgets>
 #include "scheduling/process.h"
 #include "scheduling/scheduler.h"
 
@@ -20,18 +21,14 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-/*
-table size
-*/
-
-
 /***************************************
     Global variables
 ***************************************/
 int n=0; /* number of processes */
 int col; /* number of columns needed for the selected algorithm */
-int qunatum;
+int quantum;
 QString selectedAlgorithm;
+bool allDataValid=true;
 
 
 /***************************************
@@ -49,6 +46,17 @@ void configureTable(Ui::MainWindow* ui, int n_columns, QStringList* header){
     ui->table->setHorizontalHeaderLabels(*header);
 }
 
+/*
+Description: A function returns true if text consists of numeric values only, false otherwise
+*/
+bool isValidData(QString text){
+    bool ok=false;
+    text.toInt(&ok,10);
+    if (ok){
+        return true;
+    }
+    return false;
+}
 
 /*
 Description: A function to return the user-input data about processes in a vector
@@ -57,19 +65,37 @@ vector<Process_Input> getProcessInfo(Ui::MainWindow* ui){
     vector<Process_Input> userInput(n);
 
     /* Getting Arrival time & burst time [needed for all algorithms] */
+    QString validArrival, validBurst;
     for (int i=0; i< n; i++){
         userInput[i].name = "P" + to_string(i+1);
-        userInput[i].arrival_time = ui->table->item(i,ARRIAVAL_TIME_INDEX)->text().toUInt();
-        userInput[i].burst_time = ui->table->item(i,BURST_TIME_INDEX)->text().toUInt();
+
+        /* checking if all cells contain valid data [numbers only] */
+        validArrival = ui->table->item(i,ARRIAVAL_TIME_INDEX)->text();
+        validBurst = ui->table->item(i,BURST_TIME_INDEX)->text();
+        if (isValidData(validArrival) && isValidData(validBurst)){
+            userInput[i].arrival_time = ui->table->item(i,ARRIAVAL_TIME_INDEX)->text().toUInt();
+            userInput[i].burst_time = ui->table->item(i,BURST_TIME_INDEX)->text().toUInt();
+            if (userInput[i].burst_time == 0){
+                allDataValid=false; /* busrt time can NOT be 0 */
+            }
+        }else{
+            allDataValid=false;
+        }
+
+
     }
 
     /* Getting process priority [needed only for priority algorithms] */
     if (col == 3){
         for (int i=0; i< n; i++){
-            userInput[i].priority = ui->table->item(i,PRIORITY_INDEX)->text().toUInt();
+            validArrival = ui->table->item(i,PRIORITY_INDEX)->text();
+            if (isValidData(validArrival)){
+                userInput[i].priority = ui->table->item(i,PRIORITY_INDEX)->text().toUInt();
+            }else{
+                allDataValid=false;
+            }
         }
     }
-
     return userInput;
 }
 
@@ -168,33 +194,39 @@ void MainWindow::on_proceedBtn_clicked()
 
 void MainWindow::on_simulateBtn_clicked()
 {
+    allDataValid=true;
     vector<Process_Input> processInfo = getProcessInfo(ui); /* get processes info that user entered in table */
+    if (allDataValid){
+        SchedulingType selected_algo = type_map(selectedAlgorithm.toStdString());
 
-    SchedulingType selected_algo = type_map(selectedAlgorithm.toStdString());
+        vector<Process_Output> output;
+        if (selectedAlgorithm != "Round Robin"){
+            Scheduler s(processInfo, selected_algo);
+            output= s.getChart();
+        }else{
+            quantum = ui->rrquantum->value();
+            RR_Scheduler rrs(processInfo, quantum);
+            output= rrs.getChart();
+        }
 
-    vector<Process_Output> output;
-    if (selectedAlgorithm != "Round Robin"){
-        Scheduler s(processInfo, selected_algo);
-        output= s.getChart();
+        configureGanttChart(ui,output);
+
+        /* display algorithm output */
+        ui->chart->clear();
+        auto model = ui->chart->model();
+        for (int i=0; i< output.size(); i++){
+            model->setData(model->index(0,i),QString::fromStdString(output[i].name));
+            model->setData(model->index(1,i),output[i].duration); /* time in CPU */
+        }
+
+        /* calculating waiting/turnaround times and display them */
+        float waitingTime = average_waiting_time(output,n);
+        float taTime = average_turnAround_time(output,n);
+        ui->waiting_time_label->setText(QString::fromStdString(to_string(waitingTime)));
+        ui->turnaround_time_label->setText(QString::fromStdString(to_string(taTime)));
+
     }else{
-        qunatum = ui->rrquantum->value();
-        RR_Scheduler rrs(processInfo, qunatum);
-        output= rrs.getChart();
+        QMessageBox::information(this, "Invalid Data", "Enter valid numbers!");
+        ui->table->clearContents();
     }
-
-    configureGanttChart(ui,output);
-
-    /* display algorithm output */
-    ui->chart->clear();
-    auto model = ui->chart->model();
-    for (int i=0; i< output.size(); i++){
-        model->setData(model->index(0,i),QString::fromStdString(output[i].name));
-        model->setData(model->index(1,i),output[i].duration); /* time in CPU */
-    }
-
-    /* calculating waiting/turnaround times and display them */
-    float waitingTime = average_waiting_time(output,n);
-    float taTime = average_turnAround_time(output,n);
-    ui->waiting_time_label->setText(QString::fromStdString(to_string(waitingTime)));
-    ui->turnaround_time_label->setText(QString::fromStdString(to_string(taTime)));
 }

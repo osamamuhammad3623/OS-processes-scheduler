@@ -17,8 +17,9 @@
 ***************************************/
 extern int n; /* number of processes */
 extern int col; /* number of columns needed for the selected algorithm */
-extern int qunatum; /* needed for Round Robin algorithm */
+extern int quantum; /* needed for Round Robin algorithm */
 extern QString selectedAlgorithm;
+extern bool allDataValid; /* needed to ensure all user-input data are valid [numbers only] */
 
 
 QT_BEGIN_NAMESPACE
