@@ -56,11 +56,9 @@ Description: A function to return the user-input data about processes in a vecto
 vector<Process_Input> getProcessInfo(Ui::MainWindow* ui){
     vector<Process_Input> userInput(n);
 
-    for (int i=0; i< n; i++){
-        userInput[i].name = "P" + to_string(i+1);
-    }
     /* Getting Arrival time & burst time [needed for all algorithms] */
     for (int i=0; i< n; i++){
+        userInput[i].name = "P" + to_string(i+1);
         userInput[i].arrival_time = ui->table->item(i,ARRIAVAL_TIME_INDEX)->text().toUInt();
         userInput[i].burst_time = ui->table->item(i,BURST_TIME_INDEX)->text().toUInt();
     }
@@ -76,6 +74,9 @@ vector<Process_Input> getProcessInfo(Ui::MainWindow* ui){
 }
 
 
+/*
+Description: A function to map between user selected algorithm & Scheduling type to be called/executed
+*/
 SchedulingType type_map(string type){
 
     if(type == "FCFS"){
@@ -111,16 +112,17 @@ Description: A function to set the Gantt chart [table] rows & columns.
 */
 void configureGanttChart(Ui::MainWindow* ui, vector<Process_Output> & output){
     int si = output.size();
-    int totalTime=1, widthPerUnitTime=1;
+    int totalTime=1, widthPerUnitTime=1, p_duration;
     for (auto p: output){
         totalTime+= p.duration;
     }
 
-    widthPerUnitTime = TABLE_WIDTH/totalTime;
+    widthPerUnitTime = (TABLE_WIDTH/totalTime);
 
     ui->chart->setColumnCount(si);
     for (int i=0; i< si;i++){
-        ui->chart->setColumnWidth(i,(widthPerUnitTime*(output[i].duration)));
+        p_duration = output[i].duration;
+        ui->chart->setColumnWidth(i,(widthPerUnitTime*p_duration));
     }
 
     /* Adjust chart rows */
@@ -166,7 +168,7 @@ void MainWindow::on_proceedBtn_clicked()
 
 void MainWindow::on_simulateBtn_clicked()
 {
-    vector<Process_Input> processInfo = getProcessInfo(ui);
+    vector<Process_Input> processInfo = getProcessInfo(ui); /* get processes info that user entered in table */
 
     SchedulingType selected_algo = type_map(selectedAlgorithm.toStdString());
 

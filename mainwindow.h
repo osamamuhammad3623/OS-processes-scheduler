@@ -6,7 +6,7 @@
 /***************************************
     Tables Definitions
 ***************************************/
-#define TABLE_WIDTH         (870)
+#define TABLE_WIDTH         (900)
 #define CHART_HEIGHT        (80)
 #define ARRIAVAL_TIME_INDEX (0)
 #define BURST_TIME_INDEX    (1)

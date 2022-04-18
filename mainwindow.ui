@@ -94,8 +94,11 @@
     <attribute name="horizontalHeaderVisible">
      <bool>false</bool>
     </attribute>
+    <attribute name="horizontalHeaderCascadingSectionResizes">
+     <bool>true</bool>
+    </attribute>
     <attribute name="horizontalHeaderMinimumSectionSize">
-     <number>70</number>
+     <number>5</number>
     </attribute>
     <attribute name="horizontalHeaderDefaultSectionSize">
      <number>125</number>
