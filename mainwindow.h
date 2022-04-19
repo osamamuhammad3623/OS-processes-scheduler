@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "scheduling/process.h"
 
 /***************************************
     Tables Definitions
@@ -33,6 +34,27 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+
+    /*
+    Description: A function to set the table according to the selected algorithm
+    */
+    void configureTable(int n_columns, QStringList* header);
+
+    /*
+    Description: A function returns true if text consists of numeric values only, false otherwise
+    */
+    bool isValidData(QString text);
+
+    /*
+    Description: A function to return the user-input data about processes in a vector
+    */
+    vector<Process_Input> getProcessInfo();
+
+    /*
+    Description: A function to set the Gantt chart [table] rows & columns.
+    */
+    void configureGanttChart(vector<Process_Output> & output);
+
 
 private slots:
     void on_proceedBtn_clicked();

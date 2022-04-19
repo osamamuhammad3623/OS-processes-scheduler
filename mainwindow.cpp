@@ -35,10 +35,7 @@ bool allDataValid=true;
     Functions implementation
 ***************************************/
 
-/*
-Description: A function to set the table according to the selected algorithm
-*/
-void configureTable(Ui::MainWindow* ui, int n_columns, QStringList* header){
+void MainWindow::configureTable(int n_columns, QStringList* header){
     ui->table->setColumnCount(n_columns);
     for (int i=0; i< n_columns; i++){
         ui->table->setColumnWidth(i,TABLE_WIDTH/n_columns);
@@ -46,10 +43,7 @@ void configureTable(Ui::MainWindow* ui, int n_columns, QStringList* header){
     ui->table->setHorizontalHeaderLabels(*header);
 }
 
-/*
-Description: A function returns true if text consists of numeric values only, false otherwise
-*/
-bool isValidData(QString text){
+bool MainWindow::isValidData(QString text){
     bool ok=false;
     text.toInt(&ok,10);
     if (ok){
@@ -58,10 +52,7 @@ bool isValidData(QString text){
     return false;
 }
 
-/*
-Description: A function to return the user-input data about processes in a vector
-*/
-vector<Process_Input> getProcessInfo(Ui::MainWindow* ui){
+vector<Process_Input> MainWindow::getProcessInfo(){
     vector<Process_Input> userInput(n);
 
     /* Getting Arrival time & burst time [needed for all algorithms] */
@@ -81,14 +72,13 @@ vector<Process_Input> getProcessInfo(Ui::MainWindow* ui){
         }else{
             allDataValid=false;
         }
-
-
     }
 
     /* Getting process priority [needed only for priority algorithms] */
     if (col == 3){
         for (int i=0; i< n; i++){
             validArrival = ui->table->item(i,PRIORITY_INDEX)->text();
+            /* check if user entered a numeric value */
             if (isValidData(validArrival)){
                 userInput[i].priority = ui->table->item(i,PRIORITY_INDEX)->text().toUInt();
             }else{
@@ -133,10 +123,7 @@ SchedulingType type_map(string type){
 }
 
 
-/*
-Description: A function to set the Gantt chart [table] rows & columns.
-*/
-void configureGanttChart(Ui::MainWindow* ui, vector<Process_Output> & output){
+void MainWindow::configureGanttChart(vector<Process_Output> & output){
     int si = output.size();
     int totalTime=1, widthPerUnitTime=1, p_duration;
     for (auto p: output){
@@ -187,7 +174,7 @@ void MainWindow::on_proceedBtn_clicked()
             }
         }
 
-        configureTable(ui, col, &header);
+        configureTable(col, &header);
     }
 }
 
@@ -195,7 +182,7 @@ void MainWindow::on_proceedBtn_clicked()
 void MainWindow::on_simulateBtn_clicked()
 {
     allDataValid=true;
-    vector<Process_Input> processInfo = getProcessInfo(ui); /* get processes info that user entered in table */
+    vector<Process_Input> processInfo = getProcessInfo(); /* get processes info that user entered in table */
     if (allDataValid){
         SchedulingType selected_algo = type_map(selectedAlgorithm.toStdString());
 
@@ -209,7 +196,7 @@ void MainWindow::on_simulateBtn_clicked()
             output= rrs.getChart();
         }
 
-        configureGanttChart(ui,output);
+        configureGanttChart(output);
 
         /* display algorithm output */
         ui->chart->clear();
