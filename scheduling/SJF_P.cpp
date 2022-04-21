@@ -11,133 +11,119 @@
 #include <vector>
 #include "scheduler.h"
 
-#define NEXT_PROCESS_NUMBER 0
-
 /*
  * Description :
  * Returns an ordered list of processes and their durations of execution on the CPU.
  */
-vector<Process_Output> SJF_P_Scheduler::getChart(){
-	/*The  vector used to store the result of the Scheduling and will be returned */
-		vector<Process_Output>result;
+vector<Process_Output> SJF_P_Scheduler::getChart() {
 
-		/*Sort the Processes based on the arrival time */
-		vector<Process_Input> buffer = sorted(this->processes , ARRIVAL_TIME);
+	vector <Process_Input> sortedArrival = sorted(processes, ARRIVAL_TIME);
+	vector<Process_Input> readyqueue;  // vector that contains the arrived processes ready to be on CPU
+	vector <Process_Output> SJF_P_OP; //vector that containes the processes according to SJF premptive
+	Process_Output temp;
+	int totalbursttime = 0;
+	int oldtotalbursttime = 0;
+	int sortedArrivalSize = sortedArrival.size();
+	int arrivaltime = sortedArrival[0].arrival_time;
+	int newarrivaltime = 0;
 
+	while (sortedArrival.size() != 0 || readyqueue.size() != 0) {
 
-		/*Queue for process ready to run (Arrival time is equal to cpu time)*/
-		vector<Process_Input> ReadyQueue;
+		if (sortedArrival.size() != 0) {
+			if (sortedArrival[0].arrival_time <= totalbursttime) {
+				readyqueue.push_back(sortedArrival[0]);
+				for (int i = 1;i < sortedArrival.size();) {
 
+					if (sortedArrival[0].arrival_time == sortedArrival[i].arrival_time) {
 
+						readyqueue.push_back(sortedArrival[i]);
+						sortedArrival.erase(sortedArrival.begin() + 1);  //remove the pushed process to queue from the main vector
+					}
+					else
+					{
+						i++;
+					}
+				}
+				sortedArrival.erase(sortedArrival.begin());  //remove the previously pushed process to the queue from the main vector
+			}
+			else if (sortedArrival.size() != 0 && sortedArrival[0].arrival_time > totalbursttime && readyqueue.size() == 0) {
 
-		int arrival_time = buffer[NEXT_PROCESS_NUMBER].arrival_time;
-		int CPU_time = 0;
+				newarrivaltime = sortedArrival[0].arrival_time;
 
-		if(buffer[NEXT_PROCESS_NUMBER].arrival_time !=0)
-		{
-			result.push_back(Process_Output("IDLE", arrival_time - 0,0,0,arrival_time));
-			CPU_time+= arrival_time;
-
+			}
 		}
 
-		while(buffer.size() != 0 || ReadyQueue.size() != 0)
-		{
+		if (readyqueue.size()) {
+			readyqueue = sorted(readyqueue, BURST_TIME);
+			oldtotalbursttime = totalbursttime;
+			totalbursttime = totalbursttime + readyqueue[0].burst_time;
+		}
 
 
-			/*Add to the ready queue all the process with the same arrival time*/
-			while (buffer.size() != 0  &&  arrival_time == buffer[NEXT_PROCESS_NUMBER].arrival_time)
-			{
-				/*Push the process into the ready queue*/
-				ReadyQueue.push_back(buffer[NEXT_PROCESS_NUMBER]);
+		if (sortedArrival.size() != 0) {
+			if (totalbursttime <= sortedArrival[0].arrival_time && readyqueue.size()) {
 
-				/*Remove the added process from the buffer*/
-				buffer= vector<Process_Input>(buffer.begin()+1 , buffer.end());
+				temp = { readyqueue[0].name , readyqueue[0].burst_time , readyqueue[0].arrival_time , oldtotalbursttime ,totalbursttime };
+				SJF_P_OP.push_back(temp);
+				readyqueue.erase(readyqueue.begin());
 
 			}
+			else if (totalbursttime > sortedArrival[0].arrival_time) { //preemption
 
-
-
-
-			int new_arrival_time =0;
-
-			if(buffer.size() != 0)
-			{
-				 new_arrival_time = buffer[NEXT_PROCESS_NUMBER].arrival_time;
+				totalbursttime = sortedArrival[0].arrival_time;
+				temp = { readyqueue[0].name , sortedArrival[0].arrival_time - oldtotalbursttime , readyqueue[0].arrival_time , oldtotalbursttime ,sortedArrival[0].arrival_time };
+				readyqueue[0].burst_time = readyqueue[0].burst_time - (sortedArrival[0].arrival_time - oldtotalbursttime);  //new burst time =  burst time -duration
+				SJF_P_OP.push_back(temp);
 			}
-
-
-			/*Sort the processes in the ready queue according to the priority*/
-			ReadyQueue = sorted(ReadyQueue , BURST_TIME);
-
-			/*Store the cpu time in case there is an interrupt*/
-			int old_CPU_time = CPU_time;
-			CPU_time += ReadyQueue[0].burst_time;
-
-			/*Case 1 : Proccess came with higher priority and no interrupt */
-			if(CPU_time <= new_arrival_time && new_arrival_time !=0)
+			else if (totalbursttime < newarrivaltime && readyqueue.size() == 0)
 			{
-				result.push_back(Process_Output( ReadyQueue[0].name, ReadyQueue[0].burst_time,ReadyQueue[0].arrival_time,old_CPU_time,CPU_time));
-				ReadyQueue = vector<Process_Input>(ReadyQueue.begin()+1 , ReadyQueue.end());
+				readyqueue.push_back(sortedArrival[0]);
+				temp = { "EMPTY" , readyqueue[0].arrival_time - totalbursttime ,totalbursttime , totalbursttime , readyqueue[0].arrival_time };
+				SJF_P_OP.push_back(temp);
+				totalbursttime = totalbursttime + readyqueue[0].arrival_time - totalbursttime;
+				sortedArrival.erase(sortedArrival.begin());
 			}
+		}
+		else {
 
 
-	/*The buffer is empty and now we sort the queue with priority and fill it*/
-			else if(new_arrival_time == 0)
-			{
-				while(ReadyQueue.size() != 0)
-				{
-					result.push_back(Process_Output( ReadyQueue[0].name, ReadyQueue[0].burst_time,ReadyQueue[0].arrival_time,old_CPU_time,old_CPU_time+ ReadyQueue[0].burst_time));
-					old_CPU_time += ReadyQueue[0].burst_time;
-					ReadyQueue = vector<Process_Input>(ReadyQueue.begin()+1 , ReadyQueue.end());
+			if (totalbursttime >= readyqueue[0].arrival_time) {
+				for (int i = 0; i < readyqueue.size();) {
 
+					if (readyqueue.size() != 0) {
+						temp = { readyqueue[0].name , readyqueue[0].burst_time ,readyqueue[0].arrival_time , oldtotalbursttime , (oldtotalbursttime + readyqueue[0].burst_time) };
+						SJF_P_OP.push_back(temp);
+						oldtotalbursttime = oldtotalbursttime + readyqueue[0].burst_time;
+						readyqueue.erase(readyqueue.begin());
+					}
+					else {
+						i++;
+					}
 				}
 			}
 
-			/*There may be an interrupt so there is a need to add the new processes to ready queue and check*/
-			else if(CPU_time > new_arrival_time)
-			{
+		}
 
-				CPU_time = old_CPU_time + (new_arrival_time - old_CPU_time);
-				result.push_back(Process_Output( ReadyQueue[0].name, new_arrival_time - old_CPU_time,ReadyQueue[0].arrival_time,old_CPU_time,new_arrival_time));
-				ReadyQueue[0].burst_time = ReadyQueue[0].burst_time -(new_arrival_time - old_CPU_time);
+	}
 
 
-			}
+	for (int i = 0; i < SJF_P_OP.size() - 1; i++) {
 
 
-			if(CPU_time < new_arrival_time && ReadyQueue.size() != 0)
-			{
-				continue;
-			}
+		int j = i + 1;
+		while (SJF_P_OP[i].name == SJF_P_OP[j].name) {
 
-			else if (CPU_time < new_arrival_time && ReadyQueue.size() == 0)
-			{
-				result.push_back(Process_Output("IDLE", new_arrival_time- CPU_time,CPU_time,CPU_time,new_arrival_time));
-				CPU_time +=  new_arrival_time- CPU_time;
-			}
-
-			arrival_time = new_arrival_time;
+			temp = { SJF_P_OP[i].name , SJF_P_OP[i].duration + SJF_P_OP[j].duration , SJF_P_OP[i].arrival_time , SJF_P_OP[i].start_time ,SJF_P_OP[j].end_time };
+			SJF_P_OP[j] = temp;
+			SJF_P_OP.erase(SJF_P_OP.begin() + i);
 
 		}
 
 
-		for(int i = 0; i < (int)result.size();i++)
-		{
-			while(result[i].name == result[i+1].name)
-			{
-				Process_Output p(result[i].name,result[i].duration+result[i+1].duration,result[i].arrival_time,result[i].start_time,result[i+1].end_time);
-				result[i] = p;
-				result.erase(result.begin()+i+1);
+	}
 
 
-			}
-		}
-
-		return result;
-
-
-
-
-	return result;
+	return SJF_P_OP;
 
 }
+
