@@ -168,12 +168,12 @@
     </property>
     <item>
      <property name="text">
-      <string>Round Robin</string>
+      <string>FCFS</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>FCFS</string>
+      <string>Round Robin</string>
      </property>
     </item>
     <item>
@@ -218,28 +218,6 @@
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
-    </property>
-   </widget>
-   <widget class="QSpinBox" name="rrquantum">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>510</x>
-      <y>140</y>
-      <width>91</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="minimum">
-     <number>1</number>
-    </property>
-    <property name="maximum">
-     <number>100</number>
-    </property>
-    <property name="value">
-     <number>1</number>
     </property>
    </widget>
    <widget class="QLabel" name="label_4">
@@ -312,6 +290,22 @@
     </property>
     <property name="text">
      <string/>
+    </property>
+   </widget>
+   <widget class="QDoubleSpinBox" name="rrquantum">
+    <property name="geometry">
+     <rect>
+      <x>520</x>
+      <y>140</y>
+      <width>101</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="minimum">
+     <double>0.010000000000000</double>
+    </property>
+    <property name="maximum">
+     <double>100.000000000000000</double>
     </property>
    </widget>
   </widget>

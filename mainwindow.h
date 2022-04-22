@@ -18,7 +18,7 @@
 ***************************************/
 extern int n; /* number of processes */
 extern int col; /* number of columns needed for the selected algorithm */
-extern int quantum; /* needed for Round Robin algorithm */
+extern float quantum; /* needed for Round Robin algorithm */
 extern QString selectedAlgorithm;
 extern bool allDataValid; /* needed to ensure all user-input data are valid [numbers only] */
 
@@ -55,11 +55,22 @@ public:
     */
     void configureGanttChart(vector<Process_Output> & output);
 
+    /*
+    Description: A function to check if the user entered a valid Arrival time & burst time
+    */
+    bool isValidTime(QString input);
+
+    /*
+    Description: A function to check if the user entered a valid priority [positive integers only]
+    */
+    bool isValidPriority(QString text);
 
 private slots:
     void on_proceedBtn_clicked();
 
     void on_simulateBtn_clicked();
+
+    void on_algorithm_currentTextChanged(const QString &arg1);
 
 private:
     Ui::MainWindow *ui;

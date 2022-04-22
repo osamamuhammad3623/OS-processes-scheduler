@@ -13,6 +13,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    ui->rrquantum->setHidden(true); /* hide the quantum option as start-up */
     this->setWindowTitle("OS Processes Scheduler");
 }
 
@@ -26,7 +27,7 @@ MainWindow::~MainWindow()
 ***************************************/
 int n=0; /* number of processes */
 int col; /* number of columns needed for the selected algorithm */
-int quantum;
+float quantum;
 QString selectedAlgorithm;
 bool allDataValid=true;
 
@@ -43,13 +44,18 @@ void MainWindow::configureTable(int n_columns, QStringList* header){
     ui->table->setHorizontalHeaderLabels(*header);
 }
 
-bool MainWindow::isValidData(QString text){
+bool MainWindow::isValidTime(QString text){
     bool ok=false;
-    text.toInt(&ok,10);
-    if (ok){
-        return true;
-    }
-    return false;
+    text.toFloat(&ok);
+
+    return ok;
+}
+
+bool MainWindow::isValidPriority(QString text){
+    bool ok=false;
+    text.toUInt(&ok);
+
+    return ok;
 }
 
 vector<Process_Input> MainWindow::getProcessInfo(){
@@ -63,12 +69,15 @@ vector<Process_Input> MainWindow::getProcessInfo(){
         /* checking if all cells contain valid data [numbers only] */
         validArrival = ui->table->item(i,ARRIAVAL_TIME_INDEX)->text();
         validBurst = ui->table->item(i,BURST_TIME_INDEX)->text();
-        if (isValidData(validArrival) && isValidData(validBurst)){
-            userInput[i].arrival_time = ui->table->item(i,ARRIAVAL_TIME_INDEX)->text().toUInt();
-            userInput[i].burst_time = ui->table->item(i,BURST_TIME_INDEX)->text().toUInt();
-            if (userInput[i].burst_time == 0){
-                allDataValid=false; /* busrt time can NOT be 0 */
+
+        if (isValidTime(validArrival) && isValidTime(validBurst)){
+            userInput[i].arrival_time = validArrival.toFloat();
+            userInput[i].burst_time = validBurst.toFloat();
+
+            if ((userInput[i].burst_time <= 0) || (userInput[i].arrival_time < 0)){
+                allDataValid=false; /* burst time NOT < 0, arrival time can NOT be negative */
             }
+
         }else{
             allDataValid=false;
         }
@@ -79,13 +88,14 @@ vector<Process_Input> MainWindow::getProcessInfo(){
         for (int i=0; i< n; i++){
             validArrival = ui->table->item(i,PRIORITY_INDEX)->text();
             /* check if user entered a numeric value */
-            if (isValidData(validArrival)){
+            if (isValidPriority(validArrival)){
                 userInput[i].priority = ui->table->item(i,PRIORITY_INDEX)->text().toUInt();
             }else{
                 allDataValid=false;
             }
         }
     }
+
     return userInput;
 }
 
@@ -125,7 +135,7 @@ SchedulingType type_map(string type){
 
 void MainWindow::configureGanttChart(vector<Process_Output> & output){
     int si = output.size();
-    int totalTime=1, widthPerUnitTime=1, p_duration;
+    float totalTime=1, widthPerUnitTime=1, p_duration;
     for (auto p: output){
         totalTime+= p.duration;
     }
@@ -159,19 +169,11 @@ void MainWindow::on_proceedBtn_clicked()
         if (selectedAlgorithm== "Preemptive Priority" || selectedAlgorithm == "Non-Preemptive Priority"){
             header << "Arrival Time" << "Burst Time" << "Priority";
             col =3;
-            ui->rrquantum->setEnabled(false);
         }
         /* other algorithms don't need Priority column */
         else{
             header << "Arrival Time" << "Burst Time";
             col =2;
-
-            /* allow user to enter a quantum */
-            if (selectedAlgorithm == "Round Robin"){
-                ui->rrquantum->setEnabled(true);
-            }else{
-                ui->rrquantum->setEnabled(false);
-            }
         }
 
         configureTable(col, &header);
@@ -217,3 +219,17 @@ void MainWindow::on_simulateBtn_clicked()
         ui->table->clearContents();
     }
 }
+
+
+/* allow user to enter a quantum */
+void MainWindow::on_algorithm_currentTextChanged(const QString &arg1)
+{
+    selectedAlgorithm = arg1;
+    if (selectedAlgorithm == "Round Robin"){
+        ui->rrquantum->setHidden(false);
+    }else{
+        ui->rrquantum->setHidden(true);
+    }
+
+}
+

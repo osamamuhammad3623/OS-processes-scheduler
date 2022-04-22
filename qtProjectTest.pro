@@ -15,7 +15,6 @@ SOURCES += \
     scheduling/PRI_NP.cpp \
     scheduling/PRI_P.cpp \
     scheduling/RoundRobin.cpp \
-    scheduling/SCHEDULING.cpp \
     scheduling/SJF_NP.cpp \
     scheduling/SJF_P.cpp \
     scheduling/process.cpp \
